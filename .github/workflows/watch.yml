@@ -1,0 +1,38 @@
+name: watch-deals
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"   # every 30 min; use "*/15" on a public repo
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "bfwatch command (once, digest, test-discord, rank)"
+        default: "once"
+
+# never run two at once: they would race on deals.db
+concurrency:
+  group: watch-deals
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # to commit deals.db back
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run watcher
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python -m bfwatch ${{ github.event.inputs.command || 'once' }}
+      - name: Save state (deals.db)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deals.db
+          git diff --cached --quiet || (git commit -m "update deals db" && git push)

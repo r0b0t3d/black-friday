@@ -1,0 +1,21 @@
+[
+  {"product":"Mac mini","chip":"M4","ram":16,"ssd":256,"msrp":599,"base":true},
+  {"product":"Mac mini","chip":"M4","ram":16,"ssd":512,"msrp":799},
+  {"product":"Mac mini","chip":"M4","ram":24,"ssd":512,"msrp":999},
+  {"product":"Mac mini","chip":"M4 Pro","ram":24,"ssd":512,"msrp":1399,"base":true},
+
+  {"product":"MacBook Pro","size":14,"chip":"M4","ram":16,"ssd":512,"msrp":1599,"base":true},
+  {"product":"MacBook Pro","size":14,"chip":"M4","ram":16,"ssd":1000,"msrp":1799},
+  {"product":"MacBook Pro","size":14,"chip":"M4","ram":24,"ssd":1000,"msrp":1999},
+  {"product":"MacBook Pro","size":14,"chip":"M5","ram":16,"ssd":512,"msrp":1599,"base":true},
+  {"product":"MacBook Pro","size":14,"chip":"M5","ram":16,"ssd":1000,"msrp":1799},
+  {"product":"MacBook Pro","size":14,"chip":"M5","ram":24,"ssd":1000,"msrp":1999},
+  {"product":"MacBook Pro","size":14,"chip":"M4 Pro","ram":24,"ssd":512,"msrp":1999,"base":true},
+  {"product":"MacBook Pro","size":14,"chip":"M4 Pro","ram":24,"ssd":1000,"msrp":2399},
+  {"product":"MacBook Pro","size":14,"chip":"M4 Max","ram":36,"ssd":1000,"msrp":3199,"base":true},
+  {"product":"MacBook Pro","size":16,"chip":"M4 Pro","ram":24,"ssd":512,"msrp":2499,"base":true},
+  {"product":"MacBook Pro","size":16,"chip":"M4 Max","ram":36,"ssd":1000,"msrp":3499,"base":true},
+
+  {"product":"Mac Studio","chip":"M4 Max","ram":36,"ssd":512,"msrp":1999,"base":true},
+  {"product":"Mac Studio","chip":"M3 Ultra","ram":96,"ssd":1000,"msrp":3999,"base":true}
+]

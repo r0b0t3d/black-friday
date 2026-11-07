@@ -1,0 +1,17 @@
+{
+  "poll_minutes": 15,
+  "digest_hours": 24,
+  "digest_size": 10,
+  "min_discount_pct": 10,
+  "min_savings_usd": 100,
+  "include_refurbished": false,
+  "max_age_hours": 48,
+  "max_notifications_per_cycle": 8,
+  "baselines_file": "baselines.json",
+  "sources": [
+    {"name": "Slickdeals: Mac mini",    "url": "https://slickdeals.net/newsearch.php?q=mac+mini&searchin=first&rss=1&sort=newest"},
+    {"name": "Slickdeals: MacBook Pro", "url": "https://slickdeals.net/newsearch.php?q=macbook+pro&searchin=first&rss=1&sort=newest"},
+    {"name": "Slickdeals: Mac Studio",  "url": "https://slickdeals.net/newsearch.php?q=mac+studio&searchin=first&rss=1&sort=newest"},
+    {"name": "r/AppleDeals",            "url": "https://www.reddit.com/r/AppleDeals/new/.rss"}
+  ]
+}
