@@ -9,9 +9,23 @@
   "max_notifications_per_cycle": 8,
   "baselines_file": "baselines.json",
   "sources": [
-    {"name": "Slickdeals: Mac mini",    "url": "https://slickdeals.net/newsearch.php?q=mac+mini&searchin=first&rss=1&sort=newest"},
-    {"name": "Slickdeals: MacBook Pro", "url": "https://slickdeals.net/newsearch.php?q=macbook+pro&searchin=first&rss=1&sort=newest"},
-    {"name": "Slickdeals: Mac Studio",  "url": "https://slickdeals.net/newsearch.php?q=mac+studio&searchin=first&rss=1&sort=newest"},
-    {"name": "r/AppleDeals",            "url": "https://www.reddit.com/r/AppleDeals/new/.rss"}
-  ]
+    {
+      "name": "Slickdeals: Mac mini",
+      "url": "https://slickdeals.net/newsearch.php?q=mac+mini&searchin=first&rss=1&sort=newest"
+    },
+    {
+      "name": "Slickdeals: MacBook Pro",
+      "url": "https://slickdeals.net/newsearch.php?q=macbook+pro&searchin=first&rss=1&sort=newest"
+    },
+    {
+      "name": "Slickdeals: Mac Studio",
+      "url": "https://slickdeals.net/newsearch.php?q=mac+studio&searchin=first&rss=1&sort=newest"
+    },
+    {
+      "name": "r/AppleDeals",
+      "url": "https://www.reddit.com/r/AppleDeals/new/.rss"
+    }
+  ],
+  "min_discount_pct_vs_median": 7,
+  "median_min_observations": 3
 }

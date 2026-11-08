@@ -60,6 +60,8 @@ def collect(cfg, db, fetch=fetch_feed):
 
 
 def qualifies(r, cfg):
+    if r["ref_kind"] == "median":  # no list price known: judged against median seen
+        return (r["pct"] or 0) >= cfg.get("min_discount_pct_vs_median", 7)
     return ((r["pct"] or 0) >= cfg.get("min_discount_pct", 10)
             or (r["savings"] or 0) >= cfg.get("min_savings_usd", 100))
 
@@ -97,6 +99,7 @@ def send_digest(cfg, db, webhook, dry=False):
 
 def cycle(cfg, db, webhook, dry=False):
     n = collect(cfg, db)
+    store.rescore_by_median(db, cfg.get("median_min_observations", 3), rearm_hours=cfg.get("max_age_hours", 48))
     log(f"poll done, {n} new deals")
     notify(cfg, db, webhook, dry)
     last = store.meta_get(db, "last_digest")

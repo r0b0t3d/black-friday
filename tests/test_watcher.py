@@ -100,6 +100,30 @@ class FlowTests(unittest.TestCase):
         finally:
             discord.post = orig
 
+    def test_median_fallback_for_unknown_chip(self):
+        prices = [("Amazon", 780), ("Best Buy", 790), ("Costco", 770), ("Micro Center", 650)]
+        for i, (shop, price) in enumerate(prices):
+            t = f"Mac mini M6 16GB/256GB ${price} at {shop}"
+            e = {"id": str(i), "title": t, "link": f"https://x.test/{i}", "published": datetime.now(timezone.utc)}
+            store.add_deal(self.db, P(t), e, "t", notified=True)  # stored silently, as on a first sighting
+        store.rescore_by_median(self.db)
+        rows = store.ranked(self.db)
+        self.assertEqual([x["price"] for x in rows], [650, 770])  # only sub-median prices are ranked
+        r = rows[0]
+        self.assertFalse(cli.qualifies(rows[1], {}))  # 0.6% below median: ranked, but no alert
+        self.assertEqual((r["price"], r["ref_kind"], r["ref_price"]), (650, "median", 775))
+        self.assertTrue(cli.qualifies(r, {}))
+        self.assertEqual(len(store.pending(self.db)), 2)  # re-armed; notify() filters by qualifies
+        self.assertIn("below median", json.dumps(discord.deal_payload(r, 1)))
+
+    def test_median_needs_enough_observations(self):
+        for i, price in enumerate([780, 650]):
+            t = f"Mac mini M6 16GB/256GB ${price} at Amazon{i}"
+            e = {"id": str(i), "title": t, "link": "u", "published": None}
+            store.add_deal(self.db, P(t), e, "t")
+        store.rescore_by_median(self.db)
+        self.assertEqual(store.ranked(self.db), [])
+
     def test_bad_source_does_not_crash(self):
         def boom(u): raise OSError("down")
         self.assertEqual(cli.collect(self.cfg, self.db, fetch=boom), 0)
