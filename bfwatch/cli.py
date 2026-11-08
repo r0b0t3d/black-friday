@@ -43,13 +43,19 @@ def collect(cfg, db, fetch=fetch_feed):
         except Exception as e:  # one dead source must not stop the others
             log(f"! {src['name']}: {e}")
             continue
+        parsed = skipped = 0
         for e in entries:
             deal = parse_title(e["title"], cfg["baselines"])
+            parsed += bool(deal)
+            if not deal and cfg.get("debug") is not False and skipped < 3:
+                skipped += 1
+                log(f"  unparsed: {e['title'][:90]}")
             if not deal or (deal.condition != "new" and not cfg.get("include_refurbished", False)):
                 continue
             stale = e["published"] is not None and now - e["published"] > max_age
             if store.add_deal(db, deal, e, src["name"], notified=stale):
                 added += 1
+        log(f"{src['name']}: {len(entries)} entries, {parsed} parsed as Mac deals")
     return added
 
 
