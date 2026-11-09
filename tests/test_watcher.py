@@ -129,5 +129,45 @@ class FlowTests(unittest.TestCase):
         self.assertEqual(cli.collect(self.cfg, self.db, fetch=boom), 0)
 
 
+from bfwatch import vn
+
+LD_PAGE = """<html><script type="application/ld+json">{"@type":"Product","offers":{"@type":"Offer","price":"1110000",
+"priceCurrency":"VND","availability":"https://schema.org/InStock"}}</script></html>"""
+RAW_PAGE = '<script>var x={"price":1320000.0,"priceCurrency":"VND"}</script>'
+TIKI = json.dumps({"data": [{"name": "Dong ho AMA Watch LT31", "price": 900000, "url_path": "a.html"},
+                           {"name": "Tammi Watch Kid Max GPS", "price": 1355000, "url_path": "max.html"},
+                           {"name": "Tammi Watch Kid Max (box)", "price": 1299000, "url_path": "max2.html"}]})
+
+
+class VnTests(unittest.TestCase):
+    def test_extract(self):
+        self.assertEqual(vn.extract_price(LD_PAGE), (1110000.0, True))
+        self.assertEqual(vn.extract_price(RAW_PAGE), (1320000.0, None))
+        self.assertIsNone(vn.extract_price('<p>"price":"12" nothing</p>'))
+
+    def test_tiki_picks_cheapest_match(self):
+        self.assertEqual(vn.tiki_cheapest(json.loads(TIKI), "tammi.*kid.*max"), (1299000.0, None, "https://tiki.vn/max2.html"))
+
+    def test_collect_alerts_on_drop_and_restock(self):
+        db = store.connect(":memory:")
+        cfg = {"vn_watches": [{"name": "Tammi Watch Kid Max", "sources": [
+            {"store": "A", "url": "http://a"}, {"store": "Dead", "url": "http://dead"}]}]}
+        page = {"v": LD_PAGE}
+        def fetch(u):
+            if "dead" in u: raise OSError("blocked")
+            return page["v"]
+        self.assertEqual(vn.collect(cfg, db, lambda *a: None, fetch), [])      # first sighting: baseline only
+        self.assertEqual(vn.collect(cfg, db, lambda *a: None, fetch), [])      # unchanged: nothing stored/alerted
+        page["v"] = LD_PAGE.replace("1110000", "990000")
+        (product, shop, url, ev), = vn.collect(cfg, db, lambda *a: None, fetch)
+        self.assertEqual((ev["prev"], ev["price"], ev["new_low"]), (1110000, 990000, True))
+        self.assertIn("lowest seen", json.dumps(vn.alert_payload(product, shop, url, ev, db), ensure_ascii=False))
+        page["v"] = LD_PAGE.replace("1110000", "1000000")                       # +1% : no alert
+        self.assertEqual(vn.collect(cfg, db, lambda *a: None, fetch), [])
+        d = vn.digest_payload(db, ["Tammi Watch Kid Max"])
+        self.assertIn("1.000.000₫", json.dumps(d, ensure_ascii=False))
+        self.assertIn("990.000₫", json.dumps(d, ensure_ascii=False))           # lowest seen
+
+
 if __name__ == "__main__":
     unittest.main()

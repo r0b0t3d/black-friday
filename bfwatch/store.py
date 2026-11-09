@@ -11,6 +11,9 @@ CREATE TABLE IF NOT EXISTS deals(
   price REAL, msrp REAL, savings REAL, pct REAL,
   first_seen TEXT, published TEXT, notified INTEGER DEFAULT 0);
 CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT);
+CREATE TABLE IF NOT EXISTS vn_prices(
+  id INTEGER PRIMARY KEY, product TEXT, store TEXT, url TEXT,
+  price REAL, in_stock INTEGER, ts TEXT);
 """
 # best deal first: known % off, then $ saved; unknown-baseline deals sink to the bottom
 ORDER = "pct IS NULL, pct DESC, savings DESC"

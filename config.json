@@ -27,5 +27,67 @@
     }
   ],
   "min_discount_pct_vs_median": 7,
-  "median_min_observations": 3
+  "median_min_observations": 3,
+  "vn_min_drop_pct": 3,
+  "vn_digest_hours": 24,
+  "vn_watches": [
+    {
+      "name": "Tammi Watch Kid Plus",
+      "sources": [
+        {
+          "store": "CellphoneS",
+          "url": "https://cellphones.com.vn/dong-ho-thong-minh-tre-em-tammi-watch-kid-plus.html"
+        },
+        {
+          "store": "Hoàng Hà Mobile",
+          "url": "https://hoanghamobile.com/dong-ho-thong-minh/tammi-watch-kid-plus"
+        },
+        {
+          "store": "Tiki",
+          "type": "tiki",
+          "url": "https://tiki.vn/api/v2/products?limit=20&q=tammi+watch+kid+plus",
+          "match": "tammi.*kid.*plus"
+        },
+        {
+          "store": "Thế Giới Di Động",
+          "enabled": false,
+          "url": "https://www.thegioididong.com/dong-ho-thong-minh/dong-ho-dinh-vi-tre-em-tammi-watch-kid-plus"
+        },
+        {
+          "store": "Điện Máy Xanh",
+          "enabled": false,
+          "url": "https://www.dienmayxanh.com/dong-ho-thong-minh/dong-ho-dinh-vi-tre-em-tammi-watch-kid-plus"
+        }
+      ]
+    },
+    {
+      "name": "Tammi Watch Kid Max",
+      "sources": [
+        {
+          "store": "CellphoneS",
+          "url": "https://cellphones.com.vn/dong-ho-thong-minh-tre-em-tammi-watch-kid-max.html"
+        },
+        {
+          "store": "Hoàng Hà Mobile",
+          "url": "https://hoanghamobile.com/dong-ho-thong-minh/tammi-watch-kid-max"
+        },
+        {
+          "store": "Tiki",
+          "type": "tiki",
+          "url": "https://tiki.vn/api/v2/products?limit=20&q=tammi+watch+kid+max",
+          "match": "tammi.*kid.*max"
+        },
+        {
+          "store": "Thế Giới Di Động",
+          "enabled": false,
+          "url": "https://www.thegioididong.com/dong-ho-thong-minh/dong-ho-dinh-vi-tre-em-tammi-watch-kid-max"
+        },
+        {
+          "store": "Điện Máy Xanh",
+          "enabled": false,
+          "url": "https://www.dienmayxanh.com/dong-ho-thong-minh/dong-ho-dinh-vi-tre-em-tammi-watch-kid-max"
+        }
+      ]
+    }
+  ]
 }

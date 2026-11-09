@@ -5,6 +5,7 @@
   python -m bfwatch rank [-n 20]   print the leaderboard of every deal collected
   python -m bfwatch digest         post the leaderboard to Discord now
   python -m bfwatch test-discord   send a test message
+  python -m bfwatch vn             current Vietnam prices (Tammi watches)
   python -m bfwatch parse "title"  see how a deal title is interpreted
 """
 import argparse
@@ -15,7 +16,7 @@ import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from . import discord, store
+from . import discord, store, vn
 from .feeds import fetch_feed
 from .parse import parse_title
 
@@ -99,6 +100,11 @@ def send_digest(cfg, db, webhook, dry=False):
 
 def cycle(cfg, db, webhook, dry=False):
     n = collect(cfg, db)
+    if cfg.get("vn_watches"):
+        try:
+            vn.cycle(cfg, db, webhook, store, dry, log)
+        except Exception as e:  # never let the VN side break the Mac watcher
+            log("! vn cycle failed:", e)
     store.rescore_by_median(db, cfg.get("median_min_observations", 3), rearm_hours=cfg.get("max_age_hours", 48))
     log(f"poll done, {n} new deals")
     notify(cfg, db, webhook, dry)
@@ -123,7 +129,7 @@ def print_rank(db, top, product):
 
 def main(argv=None):
     p = argparse.ArgumentParser(prog="bfwatch", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("cmd", choices=["run", "once", "rank", "digest", "test-discord", "parse"])
+    p.add_argument("cmd", choices=["run", "once", "rank", "digest", "test-discord", "parse", "vn"])
     p.add_argument("title", nargs="?")
     p.add_argument("-c", "--config", default=str(ROOT / "config.json"))
     p.add_argument("-n", "--top", type=int, default=20)
@@ -141,6 +147,12 @@ def main(argv=None):
         sys.exit("Set DISCORD_WEBHOOK_URL (or pass --dry-run).")
     if a.cmd == "rank":
         print_rank(db, a.top, a.product)
+    elif a.cmd == "vn":
+        vn.collect(cfg, db, log)
+        for w in cfg.get("vn_watches", []):
+            print(w["name"])
+            for r in vn.current(db, w["name"]):
+                print(f"  {vn.vnd(r['price']):>12}  {r['store']:<12} {r['url']}")
     elif a.cmd == "test-discord":
         discord.post(webhook, {"content": "✅ Black Friday Mac watcher is connected."})
     elif a.cmd == "digest":
