@@ -34,3 +34,13 @@ Tests: `python -m unittest discover -s tests`.
 - Parsing is title-based and heuristic. Check `rank` output now and then and use
   `parse "title"` to debug misreads.
 - Baselines are US prices from my knowledge and may be out of date.
+
+## Vietnam: Tammi Watch Kid Plus / Max
+`vn_watches` in `config.json` lists store pages per product. Each poll saves a price only when it
+changes (a price history). Discord pings on a drop of 3% or more (`vn_min_drop_pct`), a new lowest
+price seen, or back in stock. A daily "current prices + lowest seen" summary is also posted.
+`python -m bfwatch vn` prints the current prices.
+
+Tested from GitHub Actions: CellphoneS and Hoàng Hà Mobile work. Thế Giới Di Động and Điện Máy Xanh
+time out from GitHub's US servers (disabled; enable them if you run this from a machine in Vietnam),
+Shopee returns 403 to bots, and Tiki's API is intermittently 403 (disabled).

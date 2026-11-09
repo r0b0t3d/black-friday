@@ -46,7 +46,8 @@
           "store": "Tiki",
           "type": "tiki",
           "url": "https://tiki.vn/api/v2/products?limit=20&q=tammi+watch+kid+plus",
-          "match": "tammi.*kid.*plus"
+          "match": "tammi.*kid.*plus",
+          "enabled": false
         },
         {
           "store": "Thế Giới Di Động",
@@ -75,7 +76,8 @@
           "store": "Tiki",
           "type": "tiki",
           "url": "https://tiki.vn/api/v2/products?limit=20&q=tammi+watch+kid+max",
-          "match": "tammi.*kid.*max"
+          "match": "tammi.*kid.*max",
+          "enabled": false
         },
         {
           "store": "Thế Giới Di Động",
