@@ -41,6 +41,11 @@ changes (a price history). Discord pings on a drop of 3% or more (`vn_min_drop_p
 price seen, or back in stock. A daily "current prices + lowest seen" summary is also posted.
 `python -m bfwatch vn` prints the current prices.
 
+Also watched: **Karcher VC 3 Plus** (META.vn, Điện Máy Hải Anh, KingHouse, Huy Linh) and **all Acnos
+portable speakers**: models are discovered automatically from the CellphoneS, Điện Máy Chợ Lớn and HACOM
+brand pages (`discover` in `config.json`), so new models are picked up on their own. The Vietnam side polls
+every `vn_poll_hours` (3) and the daily summary is split into several Discord messages.
+
 Tested from GitHub Actions: CellphoneS and Hoàng Hà Mobile work. Thế Giới Di Động and Điện Máy Xanh
 time out from GitHub's US servers (disabled; enable them if you run this from a machine in Vietnam),
 Shopee returns 403 to bots, and Tiki's API is intermittently 403 (disabled).

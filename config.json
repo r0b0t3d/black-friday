@@ -98,7 +98,8 @@
         },
         {
           "store": "Tiki",
-          "url": "https://tiki.vn/may-hut-bui-karcher-vc-3-plus-hang-chinh-hang-p2166843.html"
+          "url": "https://tiki.vn/may-hut-bui-karcher-vc-3-plus-hang-chinh-hang-p2166843.html",
+          "enabled": false
         }
       ]
     },
