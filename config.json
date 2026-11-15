@@ -43,13 +43,6 @@
           "url": "https://hoanghamobile.com/dong-ho-thong-minh/tammi-watch-kid-plus"
         },
         {
-          "store": "Tiki",
-          "type": "tiki",
-          "url": "https://tiki.vn/api/v2/products?limit=20&q=tammi+watch+kid+plus",
-          "match": "tammi.*kid.*plus",
-          "enabled": false
-        },
-        {
           "store": "Thế Giới Di Động",
           "enabled": false,
           "url": "https://www.thegioididong.com/dong-ho-thong-minh/dong-ho-dinh-vi-tre-em-tammi-watch-kid-plus"
@@ -73,13 +66,6 @@
           "url": "https://hoanghamobile.com/dong-ho-thong-minh/tammi-watch-kid-max"
         },
         {
-          "store": "Tiki",
-          "type": "tiki",
-          "url": "https://tiki.vn/api/v2/products?limit=20&q=tammi+watch+kid+max",
-          "match": "tammi.*kid.*max",
-          "enabled": false
-        },
-        {
           "store": "Thế Giới Di Động",
           "enabled": false,
           "url": "https://www.thegioididong.com/dong-ho-thong-minh/dong-ho-dinh-vi-tre-em-tammi-watch-kid-max"
@@ -90,6 +76,57 @@
           "url": "https://www.dienmayxanh.com/dong-ho-thong-minh/dong-ho-dinh-vi-tre-em-tammi-watch-kid-max"
         }
       ]
+    },
+    {
+      "name": "Karcher VC 3 Plus",
+      "sources": [
+        {
+          "store": "META.vn",
+          "url": "https://meta.vn/may-hut-bui-gia-dinh-karcher-vc-3-plus-1-198-050-0-p105252"
+        },
+        {
+          "store": "Điện Máy Hải Anh",
+          "url": "https://dienmayhaianh.vn/san-pham/may-hut-bui-karcher-vc-3-plus-chat-luong-cao-4938.html"
+        },
+        {
+          "store": "KingHouse",
+          "url": "https://kinghouse.vn/san-pham/may-hut-bui-karcher-vc-3-plus-white.html"
+        },
+        {
+          "store": "Huy Linh",
+          "url": "https://giadunghuylinh.vn/may-hut-bui-karcher-vc3-plus-kap-1-100w"
+        },
+        {
+          "store": "Tiki",
+          "url": "https://tiki.vn/may-hut-bui-karcher-vc-3-plus-hang-chinh-hang-p2166843.html"
+        }
+      ]
+    },
+    {
+      "name": "Acnos",
+      "title": "Loa xách tay Acnos",
+      "name_prefix": "Acnos ",
+      "key_after": "acnos",
+      "discover": [
+        {
+          "store": "CellphoneS",
+          "url": "https://cellphones.com.vn/thiet-bi-am-thanh/loa/karaoke/acnos.html"
+        },
+        {
+          "store": "Điện Máy Chợ Lớn",
+          "url": "https://dienmaycholon.com/loa-karaoke-xach-tay-acnos"
+        },
+        {
+          "store": "HACOM",
+          "url": "https://hacom.vn/loa-karaoke"
+        },
+        {
+          "store": "FPT Shop",
+          "enabled": false,
+          "url": "https://fptshop.com.vn/phu-kien/loa/acnos"
+        }
+      ]
     }
-  ]
+  ],
+  "vn_poll_hours": 3
 }

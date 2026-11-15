@@ -164,9 +164,47 @@ class VnTests(unittest.TestCase):
         self.assertIn("lowest seen", json.dumps(vn.alert_payload(product, shop, url, ev, db), ensure_ascii=False))
         page["v"] = LD_PAGE.replace("1110000", "1000000")                       # +1% : no alert
         self.assertEqual(vn.collect(cfg, db, lambda *a: None, fetch), [])
-        d = vn.digest_payload(db, ["Tammi Watch Kid Max"])
+        (d,) = vn.digest_payloads(db, cfg)
         self.assertIn("1.000.000₫", json.dumps(d, ensure_ascii=False))
         self.assertIn("990.000₫", json.dumps(d, ensure_ascii=False))           # lowest seen
+
+    def test_model_keys(self):
+        k = lambda u: vn.model_key(u, "acnos")
+        self.assertEqual(k("https://x/loa-karaoke-xach-tay-mini-acnos-cs448-100w-2-bass-16.5cm-150w.html"), "cs448")
+        self.assertEqual(k("https://x/loa-karaoke-acnos-soncamedia-cs201p.html"), "cs201p")
+        self.assertEqual(k("https://x/loa-karaoke-xach-tay-acnos-quad-64-2-bass-16cm-180w"), "quad 64")
+        self.assertEqual(k("https://x/loa-karaoke-di-dong-acnos-flac-36-ultimate-mau-den"), "flac 36 ultimate")
+        self.assertEqual(k("https://x/loa-xach-tay-karaoke-acnos-acoustic-3.html"), "acoustic 3")
+        self.assertIsNone(k("https://x/thiet-bi-am-thanh/loa/karaoke/acnos.html"))   # category page
+        self.assertIsNone(k("https://x/loa-karaoke-xach-tay-acnos"))
+
+    def test_discover_group_and_cheapest_variant(self):
+        listing = ('<a href="/loa-karaoke-xach-tay-acnos">cat</a>'
+                   '<a href="/p/loa-karaoke-acnos-s30-mau-den">a</a><a href="/p/loa-karaoke-acnos-s30-mau-trang">b</a>'
+                   '<a href="/p/loa-karaoke-acnos-cs201plus?x=1">c</a><a href="https://other.com/acnos-zz">d</a>')
+        pages = {"http://shop.vn/loa-karaoke-xach-tay-acnos": listing,
+                 "http://shop.vn/p/loa-karaoke-acnos-s30-mau-den": '<x>"price":1500000</x>',
+                 "http://shop.vn/p/loa-karaoke-acnos-s30-mau-trang": '<x>"price":1400000</x>',
+                 "http://shop.vn/p/loa-karaoke-acnos-cs201plus": '<x>"price":3990000</x>'}
+        cfg = {"vn_watches": [{"name": "Acnos", "title": "Acnos speakers", "name_prefix": "Acnos ", "key_after": "acnos",
+                               "discover": [{"store": "Shop", "url": "http://shop.vn/loa-karaoke-xach-tay-acnos"}]}]}
+        db = store.connect(":memory:")
+        vn.collect(cfg, db, lambda *a: None, lambda u: pages[u])
+        got = {r["product"]: r["price"] for n in ("Acnos S30", "Acnos CS201PLUS") for r in vn.current(db, n)}
+        self.assertEqual(got, {"Acnos S30": 1400000.0, "Acnos CS201PLUS": 3990000.0})
+        (d,) = vn.digest_payloads(db, cfg)
+        self.assertIn("**S30** 1.400.000₫", d["embeds"][0]["description"])
+
+    def test_digest_splits_into_messages(self):
+        db = store.connect(":memory:")
+        cfg = {"vn_watches": [{"name": "Acnos", "name_prefix": "Acnos ", "key_after": "acnos", "discover": []}]}
+        for i in range(60):
+            vn.record(db, f"Acnos M{i}", "Shop", "https://shop.vn/" + "x" * 90, 1000000 + i, True)
+        ps = vn.digest_payloads(db, cfg)
+        self.assertGreater(len(ps), 1)
+        for p in ps:
+            self.assertLessEqual(sum(len(e["title"]) + len(e["description"]) for e in p["embeds"]), 6000)
+            self.assertLessEqual(len(p["embeds"]), 10)
 
 
 if __name__ == "__main__":

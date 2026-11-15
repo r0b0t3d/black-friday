@@ -149,10 +149,11 @@ def main(argv=None):
         print_rank(db, a.top, a.product)
     elif a.cmd == "vn":
         vn.collect(cfg, db, log)
-        for w in cfg.get("vn_watches", []):
-            print(w["name"])
-            for r in vn.current(db, w["name"]):
-                print(f"  {vn.vnd(r['price']):>12}  {r['store']:<12} {r['url']}")
+        for title, names, _ in vn.sections(db, cfg):
+            print(title)
+            for n in names:
+                for r in vn.current(db, n):
+                    print(f"  {vn.vnd(r['price']):>12}  {n:<26} {r['store']:<16} {r['url']}")
     elif a.cmd == "test-discord":
         discord.post(webhook, {"content": "✅ Black Friday Mac watcher is connected."})
     elif a.cmd == "digest":
