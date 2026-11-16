@@ -195,6 +195,13 @@ class VnTests(unittest.TestCase):
         (d,) = vn.digest_payloads(db, cfg)
         self.assertIn("**S30** 1.400.000₫", d["embeds"][0]["description"])
 
+    def test_include_filter(self):
+        w = {"include": r"^(cs\d|s30\b|s60\b)"}
+        for k in ("cs201plus", "cs160 pro", "s30", "s30 ver 2", "s60"):
+            self.assertTrue(vn.wanted(k, w), k)
+        for k in ("cps 16s", "flac 36", "dauris 200", "acoustic 3", "s600"):
+            self.assertFalse(vn.wanted(k, w), k)
+
     def test_digest_splits_into_messages(self):
         db = store.connect(":memory:")
         cfg = {"vn_watches": [{"name": "Acnos", "name_prefix": "Acnos ", "key_after": "acnos", "discover": []}]}

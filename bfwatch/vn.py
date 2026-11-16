@@ -158,6 +158,11 @@ def model_key(url: str, after: str):
     return " ".join(toks) or None
 
 
+def wanted(key: str, w: dict) -> bool:
+    """Optional `include` regex on the model key (e.g. only CS, S30, S60 models)."""
+    return not w.get("include") or bool(re.search(w["include"], key, re.I))
+
+
 def find_links(html: str, base: str, word: str):
     host = urlparse(base).netloc
     out, seen = [], set()
@@ -187,7 +192,7 @@ def expand(cfg, log, fetch):
             found = 0
             for link in find_links(html, d["url"], w["key_after"]):
                 key = model_key(link, w["key_after"])
-                if key:
+                if key and wanted(key, w):
                     found += 1
                     tasks.append((w["name_prefix"] + key.upper(), d["store"], {"store": d["store"], "url": link}))
             log(f"{w.get('title', 'discover')} @ {d['store']}: {found} product pages found")
@@ -230,6 +235,7 @@ def sections(db, cfg):
         if "name_prefix" in w:
             names = [r[0] for r in db.execute("SELECT DISTINCT product FROM vn_prices WHERE product LIKE ? ORDER BY product",
                                               (w["name_prefix"] + "%",))]
+            names = [n for n in names if wanted(n[len(w["name_prefix"]):], w)]
             out.append((w.get("title", w["name_prefix"].strip()), names, w["name_prefix"]))
         else:
             out.append((w["name"], [w["name"]], ""))

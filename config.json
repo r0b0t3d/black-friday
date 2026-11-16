@@ -126,7 +126,8 @@
           "enabled": false,
           "url": "https://fptshop.com.vn/phu-kien/loa/acnos"
         }
-      ]
+      ],
+      "include": "^(cs\\d|s30\\b|s60\\b)"
     }
   ],
   "vn_poll_hours": 3
