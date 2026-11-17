@@ -17,7 +17,7 @@ EXCLUDE = re.compile(
 CARRIER = re.compile(
     r"trade[- ]?in|new line|new customers?|activation|\bswitch(?:ing)?\b|port[- ]in|\bbogo\b|buy one|"
     r"with (?:any )?(?:unlimited|plan|service)|per month|/mo\b|monthly|installments?|prepaid|tracfone|"
-    r"straight talk|boost mobile|metro by|visible|mint mobile|cricket", re.I)
+    r"straight talk|boost mobile|metro by|visible|mint mobile|cricket|t-mobile|\bat&t|\batt\b|verizon|sprint|us cellular", re.I)
 IPHONE = re.compile(r"iphone\s*(?:(\d{1,2})(e)?|(air))\s*(pro\s*max|pro|plus|mini)?", re.I)
 FOREIGN = re.compile(r"[£€]|\bC\$|\bCAD\b|\bAUD\b|\bGBP\b|\bEUR\b", re.I)
 REFURB = re.compile(r"refurb|renewed|open[- ]box|\bused\b|pre[- ]owned|certified", re.I)
@@ -31,7 +31,7 @@ RETAILERS = [
 MONEY = re.compile(
     r"(?P<pre>\b(?:was|reg(?:ular)?|msrp|list|orig(?:inal)?|save|extra)\.?\s*:?\s*)?"
     r"\$\s?(?P<d>\d{1,3}(?:,\d{3})+|\d+)(?:\.(?P<c>\d{2}))?"
-    r"(?P<post>\s*(?:off|discount|savings|(?:\w+\s)?gift\s*card|credit|back|instant|rebate))?",
+    r"(?P<post>\s*(?:off|discount|savings|(?:\w+\s)?e?gift\s*card|credit|back|instant|rebate))?",
     re.I)
 PCT_OFF = re.compile(r"(\d{1,2})\s*%\s*off", re.I)
 CHIP = re.compile(r"\bM([1-9])(?:\s*(Pro|Max|Ultra))?\b", re.I)

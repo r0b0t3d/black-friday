@@ -58,7 +58,7 @@ class ParseTests(unittest.TestCase):
     def test_iphone_rejects(self):
         for t in ["iPhone 17 Pro Max free w/ trade-in at Verizon $0", "iPhone 17 256GB new line required $799",
                   "iPhone 17 Pro case $29.99", "iPhone 17 Pro MagSafe screen protector $400", "iPhone charger $35",
-                  "iPhone 17 256GB $20/mo for 36 months"]:
+                  "iPhone 17 256GB $20/mo for 36 months", "128GB Apple iPhone 16 Pro for T-Mobile + $300 Walmart eGift Card"]:
             self.assertIsNone(P(t), t)
 
     def test_refurb_flag(self):
