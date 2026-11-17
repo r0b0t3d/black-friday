@@ -46,6 +46,21 @@ class ParseTests(unittest.TestCase):
     def test_absurd_discount_rejected(self):
         self.assertIsNone(P("Mac Studio M4 Max 36GB/512GB $550"))
 
+    def test_iphone(self):
+        d = P("Apple iPhone 17 Pro Max 256GB Unlocked $1,049 at Amazon")
+        self.assertEqual((d.product, d.chip, d.ssd, d.ram, d.price, d.retailer), ("iPhone", "17 Pro Max", 256, None, 1049, "Amazon"))
+        self.assertEqual(d.config_label(), "iPhone 17 Pro Max 256GB")
+        self.assertIsNone(d.msrp)  # no list price known: judged against median / stated savings
+        self.assertEqual(P("iPhone Air 256GB $100 off at Best Buy").savings, 100)
+        self.assertEqual(P("iPhone 16e 128GB $549 Walmart").ssd, 128)   # 128GB is storage, not RAM
+        self.assertEqual(P("Apple iPhone 17 512GB $200 off + $100 Amazon gift card").savings, 200)
+
+    def test_iphone_rejects(self):
+        for t in ["iPhone 17 Pro Max free w/ trade-in at Verizon $0", "iPhone 17 256GB new line required $799",
+                  "iPhone 17 Pro case $29.99", "iPhone 17 Pro MagSafe screen protector $400", "iPhone charger $35",
+                  "iPhone 17 256GB $20/mo for 36 months"]:
+            self.assertIsNone(P(t), t)
+
     def test_refurb_flag(self):
         self.assertEqual(P("Refurbished Mac mini M4 16GB 256GB $469").condition, "refurbished")
 

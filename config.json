@@ -24,6 +24,18 @@
     {
       "name": "r/AppleDeals",
       "url": "https://www.reddit.com/r/AppleDeals/new/.rss"
+    },
+    {
+      "name": "Slickdeals: iPhone unlocked",
+      "url": "https://slickdeals.net/newsearch.php?q=iphone+unlocked&searchin=first&rss=1&sort=newest"
+    },
+    {
+      "name": "Slickdeals: iPhone Pro",
+      "url": "https://slickdeals.net/newsearch.php?q=iphone+pro&searchin=first&rss=1&sort=newest"
+    },
+    {
+      "name": "Slickdeals: iPhone Air/e",
+      "url": "https://slickdeals.net/newsearch.php?q=apple+iphone&searchin=first&rss=1&sort=newest"
     }
   ],
   "min_discount_pct_vs_median": 7,

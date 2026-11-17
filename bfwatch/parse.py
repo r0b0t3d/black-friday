@@ -7,11 +7,18 @@ PRODUCTS = [
     ("Mac mini", r"mac\s*mini"),
     ("MacBook Pro", r"macbook\s*pro"),
     ("Mac Studio", r"mac\s*studio"),
+    ("iPhone", r"iphone"),
 ]
 # accessories / other products that mention our product names
 EXCLUDE = re.compile(
     r"studio display|macbook air|\b(case|sleeve|dock|stand|hub|charger|cable|adapter|"
-    r"keyboard|mouse|monitor|screen protector|skin|bag|backpack|applecare)\b", re.I)
+    r"keyboard|mouse|monitor|screen protector|protector|cover|holder|wallet|strap|tempered|skin|bag|backpack|applecare)\b", re.I)
+# carrier promos (trade-in / new line / plan) are not comparable to an unlocked retail price
+CARRIER = re.compile(
+    r"trade[- ]?in|new line|new customers?|activation|\bswitch(?:ing)?\b|port[- ]in|\bbogo\b|buy one|"
+    r"with (?:any )?(?:unlimited|plan|service)|per month|/mo\b|monthly|installments?|prepaid|tracfone|"
+    r"straight talk|boost mobile|metro by|visible|mint mobile|cricket", re.I)
+IPHONE = re.compile(r"iphone\s*(?:(\d{1,2})(e)?|(air))\s*(pro\s*max|pro|plus|mini)?", re.I)
 FOREIGN = re.compile(r"[£€]|\bC\$|\bCAD\b|\bAUD\b|\bGBP\b|\bEUR\b", re.I)
 REFURB = re.compile(r"refurb|renewed|open[- ]box|\bused\b|pre[- ]owned|certified", re.I)
 RETAILERS = [
@@ -81,8 +88,14 @@ def lookup_msrp(baselines, product, chip, size, ram, ssd):
     return min((b["msrp"] for b in cands), default=None)
 
 
-def _capacities(title):
+def _capacities(title, product=None):
     ram = ssd = None
+    if product == "iPhone":  # phones have storage only; 128GB is not RAM here
+        for n, unit in CAPACITY.findall(title):
+            gb = int(n) * (1000 if unit.upper() == "TB" else 1)
+            if gb >= 64:
+                return None, gb
+        return None, None
     for n, unit in CAPACITY.findall(title):
         gb = int(n) * (1000 if unit.upper() == "TB" else 1)
         if ram is None and gb in RAM_SIZES and unit.upper() == "GB":
@@ -101,10 +114,16 @@ def parse_title(raw_title: str, baselines: list) -> Deal | None:
         return None
 
     chip = None
-    if m := CHIP.search(title):
+    if product == "iPhone":
+        if CARRIER.search(title) or not (m := IPHONE.search(title)):
+            return None
+        chip = "Air" if m.group(3) else m.group(1) + (m.group(2) or "")
+        if m.group(4):
+            chip += " " + re.sub(r"\s+", " ", m.group(4)).title()
+    elif m := CHIP.search(title):
         chip = f"M{m.group(1)}" + (f" {m.group(2).title()}" if m.group(2) else "")
     size = int(m.group(1)) if (m := SIZE.search(title)) and product == "MacBook Pro" else None
-    ram, ssd = _capacities(title)
+    ram, ssd = _capacities(title, product)
     condition = "refurbished" if REFURB.search(title) else "new"
     retailer = None
     best_pos = None
@@ -117,6 +136,8 @@ def parse_title(raw_title: str, baselines: list) -> Deal | None:
     for m in MONEY.finditer(title):
         amount = float(m.group("d").replace(",", "") + ("." + m.group("c") if m.group("c") else ""))
         pre = (m.group("pre") or "").lower().strip(" .:")
+        if m.group("post") and re.search(r"gift|credit|back|rebate", m.group("post"), re.I):
+            continue  # gift card / store credit: not a price reduction
         if m.group("post") or pre in ("save", "extra"):
             off = max(off or 0, amount)
         elif pre in ("was", "reg", "regular", "msrp", "list", "orig", "original"):
