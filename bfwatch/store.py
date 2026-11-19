@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS deals(
   price REAL, msrp REAL, savings REAL, pct REAL,
   first_seen TEXT, published TEXT, notified INTEGER DEFAULT 0);
 CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT);
+CREATE TABLE IF NOT EXISTS auto_baseline(
+  label TEXT, condition TEXT, price REAL, ts TEXT, PRIMARY KEY(label, condition));
 CREATE TABLE IF NOT EXISTS vn_prices(
   id INTEGER PRIMARY KEY, product TEXT, store TEXT, url TEXT,
   price REAL, in_stock INTEGER, ts TEXT);
@@ -78,14 +80,15 @@ def meta_set(db, k, v):
     db.commit()
 
 
-def rescore_by_median(db, min_obs=3, max_pct=60, rearm_hours=48):
+def rescore_by_median(db, min_obs=3, max_pct=60, rearm_hours=48, exclude=()):
     """Fallback for configs with no list price: compare against the median price
     seen so far for the same config + condition. Needs >= min_obs sightings.
     Deals newly scored and still fresh are re-armed for notification."""
     rows = db.execute(
         "SELECT id,label,condition,price,pct,published,first_seen FROM deals "
-        "WHERE msrp IS NULL AND price IS NOT NULL AND label LIKE '%GB%' "
+        "WHERE msrp IS NULL AND price IS NOT NULL AND (label LIKE '%GB%' OR label LIKE '%TB%') "
         "AND (savings IS NULL OR ref_kind='median')").fetchall()
+    rows = [r for r in rows if db.execute("SELECT product FROM deals WHERE id=?", (r["id"],)).fetchone()[0] not in exclude]
     groups = defaultdict(list)
     for r in rows:
         groups[(r["label"], r["condition"])].append(r)
@@ -105,4 +108,44 @@ def rescore_by_median(db, min_obs=3, max_pct=60, rearm_hours=48):
             else:
                 db.execute("UPDATE deals SET pct=NULL, savings=NULL, ref_price=?, ref_kind='median' WHERE id=?",
                            (ref, r["id"]))
+    db.commit()
+
+
+def rescore_first_seen(db, products, learn_hours=12, max_pct=60):
+    """For products with no list price: the price when a config is first seen is its baseline.
+    During the first `learn_hours` the baseline follows the cheapest price seen (so it means
+    "the best price you could pay today"); after that it is frozen and cheaper listings score
+    as discounts against it."""
+    if not products:
+        return
+    marks = ",".join("?" * len(products))
+    rows = db.execute(
+        f"SELECT id,label,condition,price,first_seen FROM deals WHERE product IN ({marks}) AND msrp IS NULL "
+        "AND price IS NOT NULL AND (label LIKE '%GB%' OR label LIKE '%TB%') "
+        "AND (savings IS NULL OR ref_kind='first_seen')", list(products)).fetchall()
+    groups = defaultdict(list)
+    for r in rows:
+        groups[(r["label"], r["condition"])].append(r)
+    now = datetime.now(timezone.utc)
+    for (label, cond), g in groups.items():
+        low = min(r["price"] for r in g)
+        b = db.execute("SELECT price, ts FROM auto_baseline WHERE label=? AND condition=?", (label, cond)).fetchone()
+        if b is None:
+            started = min(r["first_seen"] for r in g)  # a config seen days ago is already past its learning window
+            db.execute("INSERT INTO auto_baseline VALUES(?,?,?,?)", (label, cond, low, started))
+            base, learning = low, now - datetime.fromisoformat(started) < timedelta(hours=learn_hours)
+        else:
+            base = b["price"]
+            learning = now - datetime.fromisoformat(b["ts"]) < timedelta(hours=learn_hours)
+            if learning and low < base:
+                base = low
+                db.execute("UPDATE auto_baseline SET price=? WHERE label=? AND condition=?", (low, label, cond))
+        for r in g:
+            pct = (base - r["price"]) / base * 100
+            if not learning and 0 < pct <= max_pct:
+                db.execute("UPDATE deals SET pct=?, savings=?, ref_price=?, ref_kind='first_seen' WHERE id=?",
+                           (round(pct, 1), round(base - r["price"], 2), base, r["id"]))
+            else:
+                db.execute("UPDATE deals SET pct=NULL, savings=NULL, ref_price=?, ref_kind='first_seen' WHERE id=?",
+                           (base, r["id"]))
     db.commit()

@@ -52,13 +52,15 @@ class ParseTests(unittest.TestCase):
         self.assertEqual(d.config_label(), "iPhone 17 Pro Max 256GB")
         self.assertIsNone(d.msrp)  # no list price known: judged against median / stated savings
         self.assertEqual(P("iPhone Air 256GB $100 off at Best Buy").savings, 100)
+        self.assertEqual(P("iPhone 17 256GB Unlocked $749 + $100 Walmart eGC").price, 749)
         self.assertEqual(P("iPhone 16e 128GB $549 Walmart").ssd, 128)   # 128GB is storage, not RAM
         self.assertEqual(P("Apple iPhone 17 512GB $200 off + $100 Amazon gift card").savings, 200)
 
     def test_iphone_rejects(self):
         for t in ["iPhone 17 Pro Max free w/ trade-in at Verizon $0", "iPhone 17 256GB new line required $799",
                   "iPhone 17 Pro case $29.99", "iPhone 17 Pro MagSafe screen protector $400", "iPhone charger $35",
-                  "iPhone 17 256GB $20/mo for 36 months", "128GB Apple iPhone 16 Pro for T-Mobile + $300 Walmart eGift Card"]:
+                  "iPhone 17 256GB $20/mo for 36 months", "128GB Apple iPhone 16 Pro for T-Mobile + $300 Walmart eGift Card",
+                  "256GB Apple iPhone 17 Pro for TMobile + $500 Walmart eGC --> Phone Effective Price $599"]:
             self.assertIsNone(P(t), t)
 
     def test_refurb_flag(self):
@@ -130,6 +132,33 @@ class FlowTests(unittest.TestCase):
         self.assertTrue(cli.qualifies(r, {}))
         self.assertEqual(len(store.pending(self.db)), 2)  # re-armed; notify() filters by qualifies
         self.assertIn("below median", json.dumps(discord.deal_payload(r, 1)))
+
+    def _add(self, title, i, notified=False):
+        e = {"id": str(i), "title": title, "link": f"https://x.test/{i}", "published": datetime.now(timezone.utc)}
+        return store.add_deal(self.db, P(title), e, "t", notified=notified)
+
+    def test_first_seen_baseline_flags_later_drop(self):
+        self._add("iPhone Air 256GB Unlocked $840 at Best Buy", 1, True)
+        self._add("iPhone Air 256GB Unlocked $799 at Amazon", 2, True)
+        store.rescore_first_seen(self.db, ["iPhone"], learn_hours=0)
+        self.assertEqual(store.ranked(self.db), [])                       # nothing cheaper than today's best yet
+        self._add("iPhone Air 256GB Unlocked $749 at Walmart", 3)
+        store.rescore_first_seen(self.db, ["iPhone"], learn_hours=0)
+        (r,) = store.ranked(self.db)
+        self.assertEqual((r["price"], r["ref_price"], r["ref_kind"], r["pct"]), (749, 799, "first_seen", 6.3))
+        self.assertTrue(cli.qualifies(r, {}))
+        self.assertIn("below baseline", json.dumps(discord.deal_payload(r, 1)))
+        self._add("iPhone Air 256GB Unlocked $790 at Target", 4)           # 1.1% under: ranked, no alert
+        store.rescore_first_seen(self.db, ["iPhone"], learn_hours=0)
+        self.assertFalse(cli.qualifies([x for x in store.ranked(self.db) if x["price"] == 790][0], {}))
+
+    def test_baseline_follows_cheapest_while_learning(self):
+        self._add("iPhone 17 256GB $829 at Best Buy", 1)
+        store.rescore_first_seen(self.db, ["iPhone"], learn_hours=12)
+        self._add("iPhone 17 256GB $779 at Amazon", 2)
+        store.rescore_first_seen(self.db, ["iPhone"], learn_hours=12)
+        self.assertEqual(store.ranked(self.db), [])                       # absorbed into the baseline, not a deal
+        self.assertEqual(self.db.execute("SELECT price FROM auto_baseline").fetchone()[0], 779)
 
     def test_median_needs_enough_observations(self):
         for i, price in enumerate([780, 650]):

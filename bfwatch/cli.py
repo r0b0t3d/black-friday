@@ -63,6 +63,8 @@ def collect(cfg, db, fetch=fetch_feed):
 def qualifies(r, cfg):
     if r["ref_kind"] == "median":  # no list price known: judged against median seen
         return (r["pct"] or 0) >= cfg.get("min_discount_pct_vs_median", 7)
+    if r["ref_kind"] == "first_seen":  # judged against the price when first seen
+        return (r["pct"] or 0) >= cfg.get("min_discount_pct_vs_baseline", 3)
     return ((r["pct"] or 0) >= cfg.get("min_discount_pct", 10)
             or (r["savings"] or 0) >= cfg.get("min_savings_usd", 100))
 
@@ -105,7 +107,9 @@ def cycle(cfg, db, webhook, dry=False):
             vn.cycle(cfg, db, webhook, store, dry, log)
         except Exception as e:  # never let the VN side break the Mac watcher
             log("! vn cycle failed:", e)
-    store.rescore_by_median(db, cfg.get("median_min_observations", 3), rearm_hours=cfg.get("max_age_hours", 48))
+    fs = cfg.get("first_seen_baseline_products", [])
+    store.rescore_first_seen(db, fs, cfg.get("baseline_learn_hours", 12))
+    store.rescore_by_median(db, cfg.get("median_min_observations", 3), rearm_hours=cfg.get("max_age_hours", 48), exclude=fs)
     log(f"poll done, {n} new deals")
     notify(cfg, db, webhook, dry)
     last = store.meta_get(db, "last_digest")

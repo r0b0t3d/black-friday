@@ -29,11 +29,14 @@ def _money(x):
 def deal_payload(r, total):
     pct = r["pct"]
     color = COLORS["hot"] if (pct or 0) >= 25 else COLORS["good"] if (pct or 0) >= 15 else COLORS["ok"]
-    head = f"{r['label']} — {_money(r['price'])}" + (f" ({pct:.0f}% {'below median' if r['ref_kind'] == 'median' else 'off'})" if pct is not None else "")
-    median = r["ref_kind"] == "median"
+    kind = r["ref_kind"]
+    ref_word, ref_name = {"median": ("below median", "Median price seen"),
+                          "first_seen": ("below baseline", "Baseline (price when first seen)")}.get(kind, ("off", "Typical price"))
+    median = kind in ("median", "first_seen")
+    head = f"{r['label']} — {_money(r['price'])}" + (f" ({pct:.0f}% {ref_word})" if pct is not None else "")
     fields = [
         {"name": "Price", "value": _money(r["price"]), "inline": True},
-        {"name": "Median price seen" if median else "Typical price",
+        {"name": ref_name,
          "value": _money(r["ref_price"] if median else r["msrp"]) if (r["ref_price"] if median else r["msrp"]) else "unknown",
          "inline": True},
         {"name": "You save", "value": _money(r["savings"]), "inline": True},

@@ -150,5 +150,10 @@
       "include": "^(cs\\d|s30\\b|s60\\b)"
     }
   ],
-  "vn_poll_hours": 3
+  "vn_poll_hours": 3,
+  "first_seen_baseline_products": [
+    "iPhone"
+  ],
+  "min_discount_pct_vs_baseline": 3,
+  "baseline_learn_hours": 12
 }
